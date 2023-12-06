@@ -1,4 +1,7 @@
+import unittest
+
 import pytest
+
 from src.item import Item
 
 
@@ -12,21 +15,61 @@ def test_calculate_total_price(item):
 
 
 def test_apply_discount(item):
-    if Item.pay_rate == 0.8:
-        item.price = item.price * item.pay_rate
-        assert item.price == 8000.0
+    item.apply_discount()
+    assert item.price == 0.0
 
 
-@pytest.fixture
-def item_notebook():
-    return Item("Ноутбук", 20000, 5)
+def test_name(item):
+    item.name = "Смартфон"
+    assert item.name == "Смартфон"
+    item.name = "СуперСмартфон"
+    assert item.name == "СуперСмарт"
+    item.name = "Супер"
+    assert item.name == "Супер"
 
 
-def test_calculate_total_price_notebook(item_notebook):
-    assert item_notebook.calculate_total_price() == 100000
+class ItemTestCase(unittest.TestCase):
+    def setUp(self):
+        self.sample_csv = 'sample.csv'
 
+    def tearDown(self):
+        Item.all = []
 
-def test_apply_discount_notebook(item_notebook):
-    if Item.pay_rate == 0.8:
-        item_notebook.price = item_notebook.price * item_notebook.pay_rate
-        assert item_notebook.price == 20000
+    def test_instantiate_from_csv(self):
+        with open(self.sample_csv, 'w') as f:
+            f.write("name,price,quantity\n")
+            f.write("Item 1,10.99,5\n")
+            f.write("Item 2,5.99,3\n")
+
+        Item.instantiate_from_csv(self.sample_csv)
+        self.assertEqual(len(Item.all), 2)
+        self.assertEqual(Item.all[0].name, "Item 1")
+        self.assertEqual(Item.all[0].price, 10)
+        self.assertEqual(Item.all[0].quantity, 5)
+        self.assertEqual(Item.all[1].name, "Item 2")
+        self.assertEqual(Item.all[1].price, 5)
+        self.assertEqual(Item.all[1].quantity, 3)
+
+    def test_nonexistent_csv(self):
+        nonexistent_csv = 'sample.csv'
+        Item.instantiate_from_csv(nonexistent_csv)
+
+    def test_string_conversion(self):
+        with open(self.sample_csv, 'w') as f:
+            f.write("name,price,quantity\n")
+            f.write("Item 1,5,3\n")
+
+        Item.instantiate_from_csv(self.sample_csv)
+        self.assertEqual(Item.all[0].price, 5)
+        self.assertEqual(Item.all[0].quantity, 3)
+        self.assertIsInstance(Item.all[0].price, int)
+        self.assertIsInstance(Item.all[0].quantity, int)
+
+    def test_repr_str(self):
+        item1 = Item("Смартфон", 10000, 20)
+        assert repr(item1) == "Item('Смартфон', 10000, 20)"
+        assert str(item1) == 'Смартфон'
+
+        item1 = Item("Камера", 100000, 50)
+        assert repr(item1) == "Item('Камера', 100000, 50)"
+        assert str(item1) == 'Камера'

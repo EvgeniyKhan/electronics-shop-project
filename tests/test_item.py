@@ -1,75 +1,56 @@
-import unittest
-
+"""Здесь надо написать тесты с использованием pytest для модуля item."""
 import pytest
-
 from src.item import Item
+import os
 
 
 @pytest.fixture
-def item():
-    return Item("Смартфон", 10000, 20)
+def first_item():
+    return Item("Изделие", 149.99, 2)
 
 
-def test_calculate_total_price(item):
-    assert item.calculate_total_price() == 200000
+def test_apply_discount(first_item):
+    first_item.apply_discount()
+    assert first_item.price == 149.99
 
 
-def test_apply_discount(item):
-    item.apply_discount()
-    assert item.price == 0.0
+def test_calculate_total_price(first_item):
+    assert first_item.calculate_total_price() == 299.98
 
 
-def test_name(item):
-    item.name = "Смартфон"
-    assert item.name == "Смартфон"
-    item.name = "СуперСмартфон"
-    assert item.name == "СуперСмарт"
-    item.name = "Супер"
-    assert item.name == "Супер"
+@pytest.fixture
+def sample_item():
+    return Item("SampleItem", 49.99, 5)
 
 
-class ItemTestCase(unittest.TestCase):
-    def setUp(self):
-        self.sample_csv = 'sample.csv'
+def test_str_method(sample_item):
+    assert str(sample_item) == "SampleItem"
 
-    def tearDown(self):
-        Item.all = []
 
-    def test_instantiate_from_csv(self):
-        with open(self.sample_csv, 'w') as f:
-            f.write("name,price,quantity\n")
-            f.write("Item 1,10.99,5\n")
-            f.write("Item 2,5.99,3\n")
+def test_repr_method(sample_item):
+    assert repr(sample_item) == "Item('SampleItem', 49.99, 5)"
 
-        Item.instantiate_from_csv(self.sample_csv)
-        self.assertEqual(len(Item.all), 2)
-        self.assertEqual(Item.all[0].name, "Item 1")
-        self.assertEqual(Item.all[0].price, 10)
-        self.assertEqual(Item.all[0].quantity, 5)
-        self.assertEqual(Item.all[1].name, "Item 2")
-        self.assertEqual(Item.all[1].price, 5)
-        self.assertEqual(Item.all[1].quantity, 3)
 
-    def test_nonexistent_csv(self):
-        nonexistent_csv = 'sample.csv'
-        Item.instantiate_from_csv(nonexistent_csv)
+def test_instantiate_from_csv():
+    csv_data = "Phone,199.99,3\nLaptop,899.99,1\n"
+    with open("test_items.csv", "w", encoding="utf-8") as csv_file:
+        csv_file.write(csv_data)
 
-    def test_string_conversion(self):
-        with open(self.sample_csv, 'w') as f:
-            f.write("name,price,quantity\n")
-            f.write("Item 1,5,3\n")
+    Item.instantiate_from_csv("test_items.csv")
+    os.remove(csv_file.name)
 
-        Item.instantiate_from_csv(self.sample_csv)
-        self.assertEqual(Item.all[0].price, 5)
-        self.assertEqual(Item.all[0].quantity, 3)
-        self.assertIsInstance(Item.all[0].price, int)
-        self.assertIsInstance(Item.all[0].quantity, int)
 
-    def test_repr_str(self):
-        item1 = Item("Смартфон", 10000, 20)
-        assert repr(item1) == "Item('Смартфон', 10000, 20)"
-        assert str(item1) == 'Смартфон'
+def test_add_items():
+    item1 = Item("Laptop", 1000, 2)
+    item2 = Item("Tablet", 500, 3)
+    result = item1 + item2
+    assert result == 5
 
-        item1 = Item("Камера", 100000, 50)
-        assert repr(item1) == "Item('Камера', 100000, 50)"
-        assert str(item1) == 'Камера'
+
+def test_add_invalid_type_raises_error():
+    item1 = Item("Laptop", 1000, 2)
+    invalid_type = "NotAnItemInstance"
+    try:
+        result = item1 + invalid_type
+    except TypeError as e:
+        assert str(e) == "Unsupported operation"

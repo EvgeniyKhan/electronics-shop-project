@@ -51,6 +51,6 @@ def test_add_invalid_type_raises_error():
     item1 = Item("Laptop", 1000, 2)
     invalid_type = "NotAnItemInstance"
     try:
-        result = item1 + invalid_type
+        item1 + invalid_type
     except TypeError as e:
         assert str(e) == "Unsupported operation"

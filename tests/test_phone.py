@@ -30,7 +30,8 @@ def test_phone_addition_with_item_raises_error(phone):
     item = Item("Laptop", 80000, 2)
     with pytest.raises(TypeError,
                        match="Неподдерживаемая операция"):
-        result = phone + item
+        phone + item
+    assert str(phone) == "iPhone 14"
 
 
 def test_phone_number_of_sim_property(phone):
